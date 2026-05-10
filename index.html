@@ -7,6 +7,15 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Pacifico&display=swap" rel="stylesheet">
     <style>
+        :root {
+            /* Responsive sizing based on viewport */
+            --stage-size: clamp(250px, 75vmin, 450px);
+            --half-size: calc(var(--stage-size) / 2);
+            --heart-size: calc(var(--stage-size) * 0.56);
+            --heart-offset: calc(var(--heart-size) / -2);
+            --slide-dist: calc(var(--stage-size) * 0.4);
+        }
+
         body {
             margin: 0;
             padding: 0;
@@ -22,8 +31,8 @@
 
         /* Square Stage */
         .square-stage {
-            width: 250px;
-            height: 250px;
+            width: var(--stage-size);
+            height: var(--stage-size);
             position: relative;
             overflow: visible;
         }
@@ -38,21 +47,21 @@
             justify-content: center;
             text-align: center;
             padding: 20px;
-            font-size: 2.2rem;
+            font-size: clamp(1.5rem, 6vmin, 2.8rem);
             color: #ff758f;
             z-index: 1;
             transition: opacity 0.5s ease, transform 0.5s ease;
             pointer-events: none;
             word-wrap: break-word;
             opacity: 0;
-            transform: scale(0.5); /* Shuru mein thoda chota */
+            transform: scale(0.5); 
         }
 
         /* Quadrant Styling (White Shutter pieces) */
         .quadrant {
             position: absolute;
-            width: 125px;
-            height: 125px;
+            width: var(--half-size);
+            height: var(--half-size);
             background-color: white;
             box-shadow: 0 5px 15px rgba(0,0,0,0.08);
             transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.6s ease;
@@ -72,8 +81,8 @@
         /* --- BIG CLEAN SVG HEART --- */
         .heart-piece {
             position: absolute;
-            width: 140px; 
-            height: 140px;
+            width: var(--heart-size); 
+            height: var(--heart-size);
             fill: #ff4d6d;
             stroke: white;
             stroke-width: 1.5px;
@@ -82,19 +91,18 @@
             pointer-events: none;
         }
 
-        /* Heart alignment in corners */
-        .tl .heart-piece { bottom: -70px; right: -70px; }
-        .tr .heart-piece { bottom: -70px; left: -70px; }
-        .bl .heart-piece { top: -70px; right: -70px; }
-        .br .heart-piece { top: -70px; left: -70px; }
+        /* Heart alignment in corners using dynamic offset */
+        .tl .heart-piece { bottom: var(--heart-offset); right: var(--heart-offset); }
+        .tr .heart-piece { bottom: var(--heart-offset); left: var(--heart-offset); }
+        .bl .heart-piece { top: var(--heart-offset); right: var(--heart-offset); }
+        .br .heart-piece { top: var(--heart-offset); left: var(--heart-offset); }
 
         /* --- SLIDING ANIMATION STATES --- */
         
-        /* Shutter open state: Har quadrant apne corner ki taraf jayega */
-        .is-open .tl { transform: translate(-100px, -100px); opacity: 0; }
-        .is-open .tr { transform: translate(100px, -100px); opacity: 0; }
-        .is-open .bl { transform: translate(-100px, 100px); opacity: 0; }
-        .is-open .br { transform: translate(100px, 100px); opacity: 0; }
+        .is-open .tl { transform: translate(calc(var(--slide-dist) * -1), calc(var(--slide-dist) * -1)); opacity: 0; }
+        .is-open .tr { transform: translate(var(--slide-dist), calc(var(--slide-dist) * -1)); opacity: 0; }
+        .is-open .bl { transform: translate(calc(var(--slide-dist) * -1), var(--slide-dist)); opacity: 0; }
+        .is-open .br { transform: translate(var(--slide-dist), var(--slide-dist)); opacity: 0; }
 
         .is-open #message-box {
             opacity: 1;
@@ -103,20 +111,21 @@
 
         /* Next/Replay Button */
         .next-btn {
-            margin-top: 60px;
-            padding: 14px 60px;
+            margin-top: clamp(30px, 8vh, 60px);
+            padding: 12px 15%;
             background-color: white;
             color: #ff758f;
             border: none;
             border-radius: 50px; 
             font-family: 'Pacifico', cursive;
-            font-size: 1.2rem;
+            font-size: clamp(1rem, 4vmin, 1.3rem);
             cursor: pointer;
             box-shadow: 0 4px 20px rgba(0,0,0,0.15);
             transition: all 0.3s ease;
             text-transform: lowercase;
             z-index: 20;
-            min-width: 180px;
+            min-width: 200px;
+            max-width: 90vw;
         }
 
         .next-btn:active { transform: scale(0.92); }
@@ -199,13 +208,10 @@
 
             // WhatsApp Redirect aur Replay logic
             if (nextBtn.innerText === 'replay') {
-                // WhatsApp URL (using Indian country code 91)
                 window.open("https://wa.me/917891070996", "_blank");
-                
-                // Sequence reset karein
                 msgIndex = 0;
                 nextBtn.innerText = 'next';
-                return; // Seedha return karein taaki animation reset ke baad shuru ho
+                return;
             }
 
             isAnimating = true;
@@ -217,7 +223,7 @@
             // Shutter open karein
             squareStage.classList.add('is-open');
 
-            // Agar ye aakhri message hai, toh replay button dikhayein thodi der baad
+            // Button change logic
             if (msgIndex === messages.length - 1) {
                 setTimeout(() => {
                     nextBtn.innerText = "replay";
@@ -226,10 +232,8 @@
 
             // Animation timing logic
             setTimeout(() => {
-                // Shutter wapas band karein
                 squareStage.classList.remove('is-open');
 
-                // Band hone ke baad next step ke liye tayyar karein
                 setTimeout(() => {
                     if (nextBtn.innerText !== 'replay') {
                         msgIndex = (msgIndex + 1) % messages.length;
